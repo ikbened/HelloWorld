@@ -43,4 +43,3 @@ build-docker-image:
         user: root
         working-dir: /usr/local/tomcat
         entrypoint: "/usr/local/tomcat/bin/catalina.sh run"
-        

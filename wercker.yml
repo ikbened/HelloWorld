@@ -1,0 +1,47 @@
+```
+box: maven:3.5-jdk-8
+build:
+  steps:
+    - script:
+        name: get code / compile / stage for docker .
+        code: |
+          cd /pipeline/source
+          mvn package
+            
+build-docker-image:
+  box:
+    id: tomcat
+    username: $DOCKER_HUB_USERNAME
+    password: $DOCKER_HUB_PASSWORD
+  steps:
+    - script:
+        name: copy warfile
+        code: |
+          cd /pipeline/source
+          cp target/*.war /usr/local/tomcat/webapps/
+    - script:
+        name: remove pipeline/source leave wercker.yml
+        code: |
+          echo "Removing source directory" $WERCKER_SOURCE_DIR
+          cd  $WERCKER_SOURCE_DIR; ls | grep -v wercker.yml | xargs rm -rf
+    - script:
+        name: enable tomcat manager
+        code: |
+          sed -i '$ d' /usr/local/tomcat/conf/tomcat-users.xml
+          echo "<role rolename=\"manager-gui\"/>" >> /usr/local/tomcat/conf/tomcat-users.xml
+          echo "<user username=\"tomcat\" password=\"rudi_s3cret\" roles=\"manager-gui\"/>" >> /usr/local/tomcat/conf/tomcat-users.xml
+          echo "</tomcat-users>" >> /usr/local/tomcat/conf/tomcat-users.xml
+          # sed -i -e 's/127/\\d+/g' /usr/local/tomcat/webapps/manager/META-INF/context.xml
+          sed -i -e 's/127/10/g' /usr/local/tomcat/webapps/manager/META-INF/context.xml
+    - internal/docker-push:
+        registry: $DOCKER_HUB_REGISTRY
+        author: EdH
+        tag: $DOCKER_HUB_TAG
+        username: $DOCKER_HUB_USERNAME
+        password: $DOCKER_HUB_PASSWORD
+        repository: $DOCKER_HUB_REPO
+        ports: $DOCKER_PORT
+        user: root
+        working-dir: /usr/local/tomcat
+        entrypoint: "/usr/local/tomcat/bin/catalina.sh run"
+```

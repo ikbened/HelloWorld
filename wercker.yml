@@ -34,7 +34,7 @@ build-docker-image:
           sed -i -e 's/127/10/g' /usr/local/tomcat/webapps/manager/META-INF/context.xml
     - internal/docker-push:
         registry: $DOCKER_HUB_REGISTRY
-        author: EdH
+        author: edhi
         tag: $DOCKER_HUB_TAG
         username: $DOCKER_HUB_USERNAME
         password: $DOCKER_HUB_PASSWORD
@@ -43,4 +43,3 @@ build-docker-image:
         user: root
         working-dir: /usr/local/tomcat
         entrypoint: "/usr/local/tomcat/bin/catalina.sh run"
-        
